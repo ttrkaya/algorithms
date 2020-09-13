@@ -1,0 +1,230 @@
+<html>
+<head>
+	<title> B-Spline Curve </title>
+	<script>
+
+var utils = null;
+utils = {
+	captureMouse: function() {
+		window.mouseX = 0;
+		window.mouseY = 0;
+		window.isMouseDown = false;
+		document.onmousemove = function(e) {
+			window.mouseX = e.layerX;
+			window.mouseY = e.layerY;
+		};
+		document.onmousedown = function(e) {
+			window.isMouseDown = true;
+		};
+		document.onmouseup = function(e) {
+			window.isMouseDown = false;
+		};
+	},
+	frameCallback: null,
+	listenFrame: function(callback) {
+		utils.frameCallback = callback;
+		utils.onEnterFrame();
+	},
+	onEnterFrame: function() {
+		utils.frameCallback();
+		requestAnimationFrame(utils.onEnterFrame);
+	}
+};
+
+var canvasContext = null;	
+
+function Vec(x, y) {
+	this.x = x || 0;
+	this.y = y || 0;
+};
+Vec.prototype.copy = function() {
+	return new Vec(this.x, this.y);
+};
+Vec.prototype.add = function(v) {
+	this.x += v.x;
+	this.y += v.y;
+};
+Vec.prototype.sub = function(v) {
+	this.x -= v.x;
+	this.y -= v.y;
+};
+Vec.prototype.scale = function(n) {
+	this.x *= n;
+	this.y *= n;
+};
+Vec.prototype.rotate = function(angle) {
+	var tx = this.x;
+	var ty = this.y;
+	this.x = tx * Math.cos(angle) - ty * Math.sin(angle);
+	this.y = ty * Math.cos(angle) + tx * Math.sin(angle);
+};
+Vec.prototype.toText = function() {
+	return Math.round(this.x) + " : " + Math.round(this.y);
+};
+
+function clear(){
+	canvasContext.clearRect(0,0,1000,1000);	
+	canvasContext.fillStyle = "#cccccc";
+	canvasContext.fillRect(0,0,1000,1000);
+};
+
+function write(v, text, color) {
+	canvasContext.fillStyle = color || "#000000";
+	canvasContext.fillText(text, v.x, v.y - 3);
+}
+
+function drawCircle(v, r, color) {
+	canvasContext.fillStyle = color || "#000000";
+	canvasContext.beginPath();
+	canvasContext.arc(v.x, v.y, r, 0, 2*Math.PI);
+	canvasContext.fill();
+}
+
+function drawLine(vBegin, vEnd, color) {
+	canvasContext.strokeStyle = color || "#000000";
+	canvasContext.beginPath();
+	canvasContext.moveTo(vBegin.x, vBegin.y);
+	canvasContext.lineTo(vEnd.x, vEnd.y);
+	canvasContext.stroke();
+};
+
+const N = 5;
+const D = 2;
+
+var ULimits = []; //weights
+var BPoints = []; //control points
+
+var isDrawing = false;
+
+function initBPoints() {
+	var l = N + 1;
+	BPoints.length = l;
+	for(var i=0; i<l; i++){
+		BPoints[i] = new Vec(Math.random() * 400, Math.random() * 400);
+	}
+}
+
+function initULimits(){
+	var l = N + D + 2;
+	ULimits.length = l;
+	for(var i=0; i<l; i++){
+		if( i <= D){
+			ULimits[i] = 0;
+		}
+		else if( i <= N){
+			ULimits[i] = (i-D)/(N+1-D);
+		}
+		else{
+			ULimits[i] = 1;
+		}
+	}
+}
+
+function basis(i, level, u){
+	var r = -1;
+	if(level == 0){
+		if(ULimits[i] <= u && u < ULimits[i+1]){
+			r = 1;
+		}
+		else{
+			r = 0;
+		}
+	}
+	else{
+		var c0 = (u - ULimits[i]);
+		if(c0 != 0){
+			var d0 = (ULimits[i+level] - ULimits[i]);
+			if(d0 != 0) c0 /= d0;
+		} 
+		var c1 = (ULimits[i+level+1] - u);
+		if(c1 != 0){
+			var d1 = (ULimits[i+level+1] - ULimits[i+1]);
+			if(d1 != 0) c1 /= d1;
+		} 
+		r = c0 * basis(i, level-1, u) + c1 * basis(i+1, level-1, u);
+	}
+	return r;
+}
+
+function getPoint(u){
+	var r = new Vec(0,0);
+	for(var i=0; i<=N; i++){
+		var c = basis(i, D, u);
+		var p = BPoints[i];
+		r.x += c * p.x;
+		r.y += c * p.y;
+	}
+	return r;
+}
+
+function render(){
+	if(isDrawing) return;
+
+	isDrawing = true;
+	clear();
+
+	canvasContext.moveTo(BPoints[0].x, BPoints[0].y);
+	for(var i=0; i<=N; i++){
+		drawCircle(BPoints[i], 3, "#0000ff");
+	}
+
+	canvasContext.strokeStyle = "#0000ff";
+	canvasContext.beginPath();
+	canvasContext.moveTo(BPoints[0].x, BPoints[0].y);
+	for(var i=0; i<=N; i++){
+		canvasContext.lineTo(BPoints[i].x, BPoints[i].y);
+	}
+	canvasContext.stroke();
+
+	canvasContext.strokeStyle = "#000000";
+	canvasContext.beginPath();
+	canvasContext.moveTo(BPoints[0].x, BPoints[0].y);
+	const INTERVAL = 0.01;
+	for(var u=INTERVAL; u <= 1 - INTERVAL; u+=INTERVAL){
+		var p = getPoint(u);
+		canvasContext.lineTo(p.x, p.y);
+	}
+	canvasContext.lineTo(BPoints[N].x, BPoints[N].y);
+	canvasContext.stroke();
+
+	isDrawing = false;
+}
+
+function onEnterFrame() {
+	if(window.isMouseDown && !isDrawing){
+		var closestIndex = -1;
+		var closestDist = Number.MAX_VALUE;
+		for(var i=0; i<=N; i++){
+			var p = BPoints[i];
+			var dx = p.x - window.mouseX;
+			var dy = p.y - window.mouseY;
+			var dist = dx*dx + dy*dy;
+			if(dist < closestDist){
+				closestDist = dist;
+				closestIndex = i;
+			}
+		}
+		BPoints[closestIndex].x = window.mouseX + Math.random();
+		BPoints[closestIndex].y = window.mouseY + Math.random();
+
+		render();
+	}
+};
+
+window.onload = function() {
+	var canvas = document.getElementById("canvas");
+	canvasContext = canvas.getContext("2d");
+	canvasContext.font = "bold 20px Calibri";
+
+	initBPoints();
+	initULimits();
+	render();
+
+	utils.captureMouse();
+	utils.listenFrame(onEnterFrame);
+};
+	</script>
+</head>
+<body>
+<canvas id="canvas" height="400" width="400"></canvas>
+</body>
