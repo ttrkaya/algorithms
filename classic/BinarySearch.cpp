@@ -1,16 +1,28 @@
+#include <iostream>
 #include <vector>
 
-int binarySearch(std::vector<int>& a, int x){
-  int s = 0;
-  int e = (int)a.size();
-  while(s < e){
-    int m = (s + e) / 2;
-    if(x < a[m]){
-      e = m;
+size_t binarySearch(std::vector<int>& a, int x){
+  size_t lo = 0;
+  size_t hi = a.size();
+  while(lo < hi){
+    size_t mid = (lo + hi) / 2;
+    if(a[mid] < x){
+      lo = mid + 1;
     }
     else{
-      s = m + 1;
+      hi = mid;
     }
   }
-  return s;
+  return lo;
+}
+
+
+int main(){
+  std::vector<int> a{1, 3, 6, 6, 7};
+
+  for(int i = 0; i < 10; i++){
+    std::cout << i << " : " << binarySearch(a, i) << std::endl;
+  }
+
+  return 0;
 }
