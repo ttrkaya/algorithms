@@ -160,7 +160,7 @@ vector<int> fsm(const string& t, const string& p)
 	return res;
 }
 
-// Knuth–Morris–Pratt algorithm
+// Knuth-Morris-Pratt algorithm
 vector<int> kmp(const string& t, const string& p)
 {
 	vector<int> res;
@@ -238,7 +238,7 @@ bool areEqual(const vector<int> a, const vector<int> b)
 
 }
 
-int mainStringMatch()
+int main()
 {
 	using namespace stringMatching;
 
