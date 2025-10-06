@@ -40,11 +40,11 @@ void init(int n) {
 int find(int x) {
   int root = x;
   while (parent[root] != root) root = parent[root];
-  int current_node = x;
-  while (parent[current_node] != root) {
-    int next_node = parent[current_node];
-    parent[current_node] = root;
-    current_node = next_node;
+  int at = x;
+  while (parent[at] != root) {
+    int to = parent[at];
+    parent[at] = root;
+    at = to;
   }
   return root;
 }
