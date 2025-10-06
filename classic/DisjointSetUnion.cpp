@@ -27,37 +27,41 @@ void test(int testId, int x, int y) {
 }  // namespace simple
 
 namespace sized {
-vector<int> p;
-vector<int> sz;
+vector<int> parent;
+vector<int> size;
 void init(int n) {
   for (int i = 0; i < n; i++) {
-    p[i] = i;
-    sz[i] = 1;
+    parent[i] = i;
+    size[i] = 1;
   }
 }
 int find(int x) {
   int root = x;
-  while (p[root] != root) root = p[root];
+  while (parent[root] != root) root = parent[root];
   int current_node = x;
-  while (p[current_node] != root) {
-    int next_node = p[current_node];
-    p[current_node] = root;
+  while (parent[current_node] != root) {
+    int next_node = parent[current_node];
+    parent[current_node] = root;
     current_node = next_node;
   }
   return root;
 }
-void unite(int x, int y) {
+void join(int x, int y) {
   int rootX = find(x);
   int rootY = find(y);
   if (rootX != rootY) {
-    if (sz[rootX] < sz[rootY]) {
-      p[rootX] = rootY;
-      sz[rootY] += sz[rootX];
+    if (size[rootX] < size[rootY]) {
+      parent[rootX] = rootY;
+      size[rootY] += size[rootX];
     } else {
-      p[rootY] = rootX;
-      sz[rootX] += sz[rootY];
+      parent[rootY] = rootX;
+      size[rootX] += size[rootY];
     }
   }
+}
+
+void test(int testId, int x, int y) {
+  cout << "Test #" << testId << ": " << (find(x) == find(y) ? "IN" : "OUT") << endl;
 }
 }  // namespace sized
 }  // namespace dsu
@@ -65,42 +69,42 @@ void unite(int x, int y) {
 int main() {
   using namespace dsu;
 
-  int curTestId = 1;
+  int testId = 1;
   int n;
 
   n = 2;
   simple::init(n);
-  simple::test(curTestId++, 0, 1);
+  simple::test(testId++, 0, 1);
 
   n = 2;
   simple::init(n);
   simple::join(0, 1);
-  simple::test(curTestId++, 0, 1);
+  simple::test(testId++, 0, 1);
 
   n = 3;
   simple::init(n);
   simple::join(0, 1);
   simple::join(1, 2);
-  simple::test(curTestId++, 0, 2);
+  simple::test(testId++, 0, 2);
 
   n = 4;
   simple::init(n);
   simple::join(0, 1);
   simple::join(2, 3);
-  simple::test(curTestId++, 0, 3);
+  simple::test(testId++, 0, 3);
 
   n = 1000;
   simple::init(n);
   for (int i = 0; i < n / 2; i++) simple::join(i, i + 1);
   for (int i = n / 2 + 1; i < n - 1; i++) simple::join(i, i + 1);
-  simple::test(curTestId++, n / 2, n / 2 + 1);
+  simple::test(testId++, n / 2, n / 2 + 1);
 
   n = 1000;
   simple::init(n);
   for (int i = 0; i < n / 2; i++) simple::join(i, i + 1);
   for (int i = n / 2 + 1; i < n - 1; i++) simple::join(i, i + 1);
   simple::join(n / 2, n / 2 + 1);
-  simple::test(curTestId++, 0, n - 1);
+  simple::test(testId++, 0, n - 1);
 
   return 0;
 }
