@@ -2,7 +2,7 @@
 // Beware of possible stack overflows, may need a large stack memory
 // by ttrkaya
 // 01 oct 2015
-// update: 
+// update:
 // 06 oct 2025
 
 #include <iostream>
@@ -11,6 +11,7 @@
 using namespace std;
 
 namespace dsu {
+
 namespace simple {
 vector<int> parent;
 void init(int n) {
@@ -24,6 +25,41 @@ void test(int testId, int x, int y) {
   cout << "Test #" << testId << ": " << (find(x) == find(y) ? "IN" : "OUT") << endl;
 }
 }  // namespace simple
+
+namespace sized {
+vector<int> p;
+vector<int> sz;
+void init(int n) {
+  for (int i = 0; i < n; i++) {
+    p[i] = i;
+    sz[i] = 1;
+  }
+}
+int find(int x) {
+  int root = x;
+  while (p[root] != root) root = p[root];
+  int current_node = x;
+  while (p[current_node] != root) {
+    int next_node = p[current_node];
+    p[current_node] = root;
+    current_node = next_node;
+  }
+  return root;
+}
+void unite(int x, int y) {
+  int rootX = find(x);
+  int rootY = find(y);
+  if (rootX != rootY) {
+    if (sz[rootX] < sz[rootY]) {
+      p[rootX] = rootY;
+      sz[rootY] += sz[rootX];
+    } else {
+      p[rootY] = rootX;
+      sz[rootX] += sz[rootY];
+    }
+  }
+}
+}  // namespace sized
 }  // namespace dsu
 
 int main() {
