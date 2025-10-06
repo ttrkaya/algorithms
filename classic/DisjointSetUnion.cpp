@@ -30,6 +30,8 @@ namespace sized {
 vector<int> parent;
 vector<int> size;
 void init(int n) {
+	parent.resize(n);
+	size.resize(n);
   for (int i = 0; i < n; i++) {
     parent[i] = i;
     size[i] = 1;
@@ -69,9 +71,11 @@ void test(int testId, int x, int y) {
 int main() {
   using namespace dsu;
 
-  int testId = 1;
+  int testId;
   int n;
 
+	cout << "Simple:" << endl;
+	testId = 1;
   n = 2;
   simple::init(n);
   simple::test(testId++, 0, 1);
@@ -105,6 +109,42 @@ int main() {
   for (int i = n / 2 + 1; i < n - 1; i++) simple::join(i, i + 1);
   simple::join(n / 2, n / 2 + 1);
   simple::test(testId++, 0, n - 1);
+
+	cout << "Sized:" << endl;
+	testId = 1;
+  n = 2;
+  sized::init(n);
+  sized::test(testId++, 0, 1);
+
+  n = 2;
+  sized::init(n);
+  sized::join(0, 1);
+  sized::test(testId++, 0, 1);
+
+  n = 3;
+  sized::init(n);
+  sized::join(0, 1);
+  sized::join(1, 2);
+  sized::test(testId++, 0, 2);
+
+  n = 4;
+  sized::init(n);
+  sized::join(0, 1);
+  sized::join(2, 3);
+  sized::test(testId++, 0, 3);
+
+  n = 1000;
+  sized::init(n);
+  for (int i = 0; i < n / 2; i++) sized::join(i, i + 1);
+  for (int i = n / 2 + 1; i < n - 1; i++) sized::join(i, i + 1);
+  sized::test(testId++, n / 2, n / 2 + 1);
+
+  n = 1000;
+  sized::init(n);
+  for (int i = 0; i < n / 2; i++) sized::join(i, i + 1);
+  for (int i = n / 2 + 1; i < n - 1; i++) sized::join(i, i + 1);
+  sized::join(n / 2, n / 2 + 1);
+  sized::test(testId++, 0, n - 1);
 
   return 0;
 }
