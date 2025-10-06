@@ -30,8 +30,8 @@ namespace sized {
 vector<int> parent;
 vector<int> size;
 void init(int n) {
-	parent.resize(n);
-	size.resize(n);
+  parent.resize(n);
+  size.resize(n);
   for (int i = 0; i < n; i++) {
     parent[i] = i;
     size[i] = 1;
@@ -49,17 +49,12 @@ int find(int x) {
   return root;
 }
 void join(int x, int y) {
-  int rootX = find(x);
-  int rootY = find(y);
-  if (rootX != rootY) {
-    if (size[rootX] < size[rootY]) {
-      parent[rootX] = rootY;
-      size[rootY] += size[rootX];
-    } else {
-      parent[rootY] = rootX;
-      size[rootX] += size[rootY];
-    }
-  }
+  int small = find(x);
+  int large = find(y);
+  if (small == large) return;
+  if (size[small] > size[large]) swap(small, large);
+  parent[small] = large;
+  size[large] += size[small];
 }
 
 void test(int testId, int x, int y) {
@@ -74,8 +69,8 @@ int main() {
   int testId;
   int n;
 
-	cout << "Simple:" << endl;
-	testId = 1;
+  cout << "Simple:" << endl;
+  testId = 1;
   n = 2;
   simple::init(n);
   simple::test(testId++, 0, 1);
@@ -110,8 +105,8 @@ int main() {
   simple::join(n / 2, n / 2 + 1);
   simple::test(testId++, 0, n - 1);
 
-	cout << "Sized:" << endl;
-	testId = 1;
+  cout << "Sized:" << endl;
+  testId = 1;
   n = 2;
   sized::init(n);
   sized::test(testId++, 0, 1);
